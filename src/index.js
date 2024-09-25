@@ -6,38 +6,19 @@ const { parseIntInput, parseAssignments } = require('./utils');
 try {
     // Get params
     const gitHubToken = core.getInput('repo-token', { required: true });
-    const assignees = parseAssignments(
-        core.getInput('assignees', { required: false })
-    );
-    const teams = parseAssignments(core.getInput('teams', { required: false }));
-    let numOfAssignee;
-    try {
-        numOfAssignee = parseIntInput(
-            core.getInput('numOfAssignee', {
-                require: false
-            }),
-            0
-        );
-    } catch (error) {
-        throw new Error(
-            `Failed to parse value for numOfAssignee: ${error.message}`
-        );
-    }
 
-    const abortIfPreviousAssignees = core.getBooleanInput(
-        'abortIfPreviousAssignees',
-        { required: false }
+    const targetTeam = core.getInput('targetTeam', { required: true });
+    
+    let numOfAssignee = parseIntInput(
+        core.getInput('numOfAssignee', {
+            require: true
+        }),
+        2
     );
-    const removePreviousAssignees = core.getBooleanInput(
-        'removePreviousAssignees',
-        { required: false }
+
+    const excludeAssignees = parseAssignments(
+        core.getInput('excludeAssignees', { required: false })
     );
-    const allowNoAssignees = core.getBooleanInput('allowNoAssignees', {
-        required: false
-    });
-    const allowSelfAssign = core.getBooleanInput('allowSelfAssign', {
-        required: false
-    });
 
     let manualIssueNumber;
     try {
@@ -53,13 +34,6 @@ try {
         );
     }
 
-    const teamIsPullRequestReviewer = core.getBooleanInput(
-        'teamIsPullRequestReviewer',
-        {
-            required: false
-        }
-    );
-
     // Get octokit
     const octokit = github.getOctokit(gitHubToken);
 
@@ -68,15 +42,10 @@ try {
 
     // Run action
     runAction(octokit, contextPayload, {
-        assignees,
-        teams,
+        targetTeam,
+        excludeAssignees,
         numOfAssignee,
-        abortIfPreviousAssignees,
-        removePreviousAssignees,
-        allowNoAssignees,
-        allowSelfAssign,
-        manualIssueNumber,
-        teamIsPullRequestReviewer
+        manualIssueNumber
     });
 } catch (error) {
     core.setFailed(error.message);

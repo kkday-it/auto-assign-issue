@@ -1,41 +1,21 @@
-name: 'Auto-assign Issue'
-description: 'Auto-assigns issues to users or team members'
+name: 'Auto-assign Reviewer'
+description: 'Auto-assigns reviewers to teams users'
 inputs:
     repo-token:
-        description: 'The GITHUB_TOKEN, needed to update the Issue'
+        description: 'The GITHUB_TOKEN needed to update the issue'
         default: ${{ github.token }}
-    assignees:
-        description: 'Comma separated list of user names. Required if teams is not specified.'
-        required: false
-    teams:
-        description: 'Comma separated list of team names. Required if assignees is not specified.'
+    targetTeam:
+        description: 'The name of the team to which the target assignees belong'
+        required: true
+    excludeAssignees:
+        description: 'Users to be excluded from being assigned as reviewers (comma-separated)'
         required: false
     numOfAssignee:
-        description: 'Number of random assignee'
-        required: false
-    abortIfPreviousAssignees:
-        description: 'Flag that aborts the action if there were assignees previously.'
-        required: false
-        default: false
-    removePreviousAssignees:
-        description: 'Flag that removes assignees before assigning them (useful the issue is reasigned).'
-        required: false
-        default: false
-    allowNoAssignees:
-        description: 'Flag that prevents the action from failing when there are no assignees.'
-        required: false
-        default: false
-    allowSelfAssign:
-        description: 'Flag that allows self-assignment to the issue author.'
-        required: false
-        default: true
+        description: 'Number of random assignees'
+        required: true
     issueNumber:
-        description: 'Manually specified issue (or PR) ID to be used instead of the one in the context.'
+        description: 'Manually specified issue (or PR) ID to be used instead of the one in the context'
         required: false
-    teamIsPullRequestReviewer:
-        description: 'Flag that allows a team to be set as reviewer'
-        required: false
-        default: false
 
 runs:
     using: 'node20'
