@@ -43,7 +43,7 @@ try {
 
     // Run action
     runAction(octokit, contextPayload, {
-        [targetTeamA, targetTeamB],
+        targetTeams: [targetTeamA, targetTeamB],
         excludeAssignees,
         numOfAssignee,
         manualIssueNumber
