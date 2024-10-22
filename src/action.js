@@ -120,7 +120,7 @@ const runAction = async (octokit, context, parameters) => {
                     
                     curReviewers = await getReviewers(octokit, owner, repo, issueNumber);
                 }
-            });
+            }
             curr++;
         }
     })();
