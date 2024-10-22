@@ -78,7 +78,7 @@ const runAction = async (octokit, context, parameters) => {
         var curr = 0;
         
         while ((numOfAssignee - curReviewers.length > 0) && (curr <= max)) {
-            targetTeams.forEach((targetTeam) => {
+            for (const targetTeam of targetTeams) {
                 const teamMembers = await getTeamMembers(octokit, owner, [targetTeam]);
                 
                 // Remove author from reviewers
