@@ -18,14 +18,14 @@ const {
 
 const runAction = async (octokit, context, parameters) => {
     const {
-        targetTeam = "",
+        targetTeams = [],
         excludeAssignees = [],
         numOfAssignee = 0,
         manualIssueNumber = 0
     } = parameters;
 
     // Check assignees and teams parameters
-    if (targetTeam == "") {
+    if (targetTeams.length === 0) {
         throw new Error(
             'Missing required parameters: you must provide target team'
         );
@@ -71,50 +71,59 @@ const runAction = async (octokit, context, parameters) => {
         throw new Error(`Couldn't find issue info in current context`);
     }
 
-    const teamMembers = await getTeamMembers(octokit, owner, [targetTeam]);
-    let newAssignees = teamMembers;
+    var curReviewers = await getReviewers(octokit, owner, repo, issueNumber);
+    const max = numOfAssignee - curReviewers.length;
 
-    // Remove author from reviewers
-    const newReviewers = [...newAssignees];
-    const foundIndex = newReviewers.indexOf(author);
-    if (foundIndex !== -1) {
-        newReviewers.splice(foundIndex, 1);
-    }
-
-    // Remove excludeAssignees from reviewers
-    excludeAssignees.forEach((reviewer) => {
-        const foundIndex = newReviewers.indexOf(reviewer);
-        if (foundIndex !== -1) {
-            newReviewers.splice(foundIndex, 1);
+    (async () => {
+        var curr = 0;
+        
+        while ((numOfAssignee - curReviewers.length > 0) && (curr <= max)) {
+            for (const targetTeam of targetTeams) {
+                const teamMembers = await getTeamMembers(octokit, owner, [targetTeam]);
+                
+                // Remove author from reviewers
+                var newReviewers = [...teamMembers];
+                const foundIndex = newReviewers.indexOf(author);
+                if (foundIndex !== -1) {
+                    newReviewers.splice(foundIndex, 1);
+                }
+        
+                // Remove excludeAssignees from reviewers
+                excludeAssignees.forEach((reviewer) => {
+                    const foundIndex = newReviewers.indexOf(reviewer);
+                    if (foundIndex !== -1) {
+                        newReviewers.splice(foundIndex, 1);
+                    }
+                });
+            
+                // Remove current reviewers
+                curReviewers.forEach((reviewer) => {
+                    const foundIndex = newReviewers.indexOf(reviewer);
+                    if (foundIndex !== -1) {
+                        newReviewers.splice(foundIndex, 1);
+                    }
+                });
+        
+                const addReviewers = pickNRandomFromArray(newReviewers, 1);
+                if (addReviewers.length > 0) {
+                    console.log(
+                        `Setting reviewers for PR ${issueNumber}: ${JSON.stringify(
+                            addReviewers
+                        )}`
+                    );
+                    const result = await octokit.rest.pulls.requestReviewers({
+                        owner,
+                        repo,
+                        pull_number: issueNumber,
+                        reviewers: addReviewers
+                    });
+                    
+                    curReviewers = await getReviewers(octokit, owner, repo, issueNumber);
+                }
+            }
+            curr++;
         }
-    });
-
-    // Remove current reviewers
-    const curReviewers = await getReviewers(octokit, owner, repo, issueNumber);
-    curReviewers.forEach((reviewer) => {
-        const foundIndex = newReviewers.indexOf(reviewer);
-        if (foundIndex !== -1) {
-            newReviewers.splice(foundIndex, 1);
-        }
-    });
-    
-    const leftReviewer = (numOfAssignee - curReviewers.length);
-    if (leftReviewer > 0) {
-        const addReviewers = pickNRandomFromArray(newReviewers, leftReviewer);
-        if (addReviewers.length > 0) {
-            console.log(
-                `Setting reviewers for PR ${issueNumber}: ${JSON.stringify(
-                    addReviewers
-                )}`
-            );
-            const result = await octokit.rest.pulls.requestReviewers({
-                owner,
-                repo,
-                pull_number: issueNumber,
-                reviewers: addReviewers
-            });
-        }
-    }
+    })();
 };
 
 module.exports = {
