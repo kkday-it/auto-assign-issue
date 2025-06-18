@@ -1,6 +1,9 @@
 # GitHub action that Auto-assigns reviewers to team's users
 Fork & Modify & Credit from: https://github.com/pozil/auto-assign-issue
 
+## kkday-ios-member 在用
+https://github.com/kkday-it/kkday-ios-member/blob/develop/.github/workflows/CI-Automation.yml
+
 ## Github Action Examples
 
 ```yml
