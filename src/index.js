@@ -7,7 +7,8 @@ try {
     // Get params
     const gitHubToken = core.getInput('repo-token', { required: true });
 
-    const targetTeam = core.getInput('targetTeam', { required: true });
+    const targetTeamA = core.getInput('targetTeamA', { required: true });
+    const targetTeamB = core.getInput('targetTeamB', { required: true });
     
     let numOfAssignee = parseIntInput(
         core.getInput('numOfAssignee', {
@@ -42,7 +43,7 @@ try {
 
     // Run action
     runAction(octokit, contextPayload, {
-        targetTeam,
+        targetTeams: [targetTeamA, targetTeamB],
         excludeAssignees,
         numOfAssignee,
         manualIssueNumber
